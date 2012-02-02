@@ -1,0 +1,25 @@
+[Oo]bj/
+[Bb]in/
+*.user
+/TestResults
+*.vspscc
+*.vssscc
+deploy
+deploy/*
+*.suo
+*.cache
+packages/
+msbuild.log
+artifacts/log
+artifacts/
+post-build*
+_ReSharper.*
+deploy-to-ec2*
+*.cachefile
+
+#OS junk files
+[Tt]humbs.db
+*.DS_Store
+
+#Monotouch garbage
+*.pidb 
