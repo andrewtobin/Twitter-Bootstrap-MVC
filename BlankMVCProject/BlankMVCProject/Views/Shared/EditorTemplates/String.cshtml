@@ -1,0 +1,53 @@
+﻿@model String
+@{
+    // Bootstrap text box sizes - using the StringLengthAttributeAdapter to set the box size and maxlength attribute   
+    var cssClass = "input-xlarge"; // Default
+
+    var htmlAttributes = new Dictionary<string, object>();
+
+    foreach (var v in ViewData.ModelMetadata.GetValidators(ViewContext.Controller.ControllerContext))
+    {
+        var attr = v as StringLengthAttributeAdapter;
+        if (attr != null)
+        {
+            var validationParameters = attr.GetClientValidationRules().First().ValidationParameters;
+
+            if (validationParameters.ContainsKey("max"))
+            {
+                var maxLength = (int) validationParameters["max"];
+
+                htmlAttributes.Add("maxlength", maxLength);
+
+                if (maxLength <= 8)
+                {
+                    cssClass = "input-mini";
+                }
+                else if (maxLength <= 12)
+                {
+                    cssClass = "input-small";
+                }
+                else if (maxLength <= 20)
+                {
+                    cssClass = "input-medium";
+                }
+                else if (maxLength <= 30)
+                {
+                    cssClass = "input-large";
+                }
+                else if (maxLength <= 50)
+                {
+                    cssClass = "input-xlarge";
+                }
+                else
+                {
+                    cssClass = "input-xxlarge";
+                }
+            }
+        }        
+    }
+
+    htmlAttributes.Add("class", cssClass);
+}
+
+@Html.TextBox("", ViewData.TemplateInfo.FormattedModelValue, htmlAttributes)
+
