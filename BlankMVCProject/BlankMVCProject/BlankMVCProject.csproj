@@ -216,7 +216,7 @@
     <None Include="CodeTemplates\AddView\CSHTML\Details.tt" />
     <None Include="CodeTemplates\AddView\CSHTML\Edit.tt" />
     <None Include="CodeTemplates\AddView\CSHTML\Empty.tt" />
-    <None Include="CodeTemplates\AddView\CSHTML\List-DataTables.tt"/>
+    <None Include="CodeTemplates\AddView\CSHTML\List-DataTables.tt" />
     <None Include="CodeTemplates\AddView\CSHTML\List.tt" />
     <Content Include="Views\Shared\EditorTemplates\Boolean.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\DateTime.cshtml" />
