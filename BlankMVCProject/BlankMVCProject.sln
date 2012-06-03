@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 11
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlankMVCProject", "BlankMVCProject\BlankMVCProject.csproj", "{4A957ECA-37F7-4308-A923-195A152EA351}"
 EndProject
 Global
