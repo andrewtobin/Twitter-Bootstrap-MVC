@@ -1,11 +1,10 @@
-﻿$(document).ready(function() {
+﻿$(function () {
     $('form').addTriggersToJqueryValidate().triggerElementValidationsOnFormValidation();
-    $('input').elementValidation(function (element, result) {
+    $('input[data-val]').elementValidation(function (element, result) {
         var el = $(element);
-        if (el.hasClass('input-validation-error')) {
+        if (!result)
             el.parents('div.control-group').addClass('error');
-        } else {
+        else
             el.parents('div.control-group').removeClass('error');
-        }
     });
-}); 
+});
