@@ -1,0 +1,8 @@
+﻿@model DateTime?
+
+@{
+    var htmlAttributes = new Dictionary<string, object> {{"data-datepicker", "datepicker"}, 
+                                                         {"class", "input-small"}};
+
+}
+@Html.TextBox("", ViewData.TemplateInfo.FormattedModelValue, htmlAttributes)

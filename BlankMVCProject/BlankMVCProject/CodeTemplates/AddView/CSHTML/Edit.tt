@@ -4,6 +4,8 @@
 <#@ assembly name="System.Core" #>
 <#@ assembly name="System.Data.Entity" #>
 <#@ assembly name="System.Data.Linq" #>
+<#@ assembly name="System.Web.Mvc" #>
+<#@ assembly name="Twitter.Bootstrap.Utils" #>
 <#@ import namespace="System" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.ComponentModel.DataAnnotations" #>
@@ -11,9 +13,12 @@
 <#@ import namespace="System.Data.Objects.DataClasses" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Reflection" #>
+<#@ import namespace="System.Web.Mvc" #>
+<#@ import namespace="Twitter.Bootstrap.Utils.Attributes" #>
 <#
 MvcTextTemplateHost mvcHost = (MvcTextTemplateHost)(Host);
 #>
+@using Twitter.Bootstrap.Utils.Extensions
 @model <#= mvcHost.ViewDataTypeName #>
 <#
 // The following chained if-statement outputs the file header code and markup for a partial view, a content page, or a regular view.
@@ -25,7 +30,7 @@ if(mvcHost.IsPartialView) {
 #>
 
 @{
-    ViewBag.Title = "<#= mvcHost.ViewName#>";
+    ViewBag.Title = "<#= mvcHost.ViewName + " " + mvcHost.ViewDataType.Name#>";
 <#
 if (!String.IsNullOrEmpty(mvcHost.MasterPageFile)) {
 #>
@@ -34,10 +39,6 @@ if (!String.IsNullOrEmpty(mvcHost.MasterPageFile)) {
 }
 #>
 }
-<div class="page-header">
-	<h2><#= mvcHost.ViewName#></h2>
-</div>
-
 <#
 } else {
 #>
@@ -50,11 +51,9 @@ if (!String.IsNullOrEmpty(mvcHost.MasterPageFile)) {
 
 <html>
 <head>
-    <title><#= mvcHost.ViewName #></title>
+    <title><#= mvcHost.ViewName + " " + mvcHost.ViewDataType.Name#></title>
 </head>
 <body>
-	<div class="page-header">
-	</div>
 <#
     PushIndent("    ");
 }
@@ -71,14 +70,17 @@ if (mvcHost.ReferenceScriptLibraries) {
 #>
 <script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
 <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
-
+<script src="@Url.Content("~/Scripts/jquery.validate.bootstrap.js")" type="text/javascript"></script>
 <#
 }
 #>
-	@using (Html.BeginForm()) {
+<script src="@Url.Content("~/Scripts/bootstrap-datepicker.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/bootstrap-datepicker-format.js")" type="text/javascript"></script>
+
+	@using (Html.BootstrapBeginForm("form-horizontal")) {
 		@Html.ValidationSummary(true)
 		<fieldset>
-			<legend><#= mvcHost.ViewDataType.Name #></legend>
+			<legend><#= mvcHost.ViewName + " " + mvcHost.ViewDataType.Name#></legend>
 <#
 foreach (ModelProperty property in GetModelProperties(mvcHost.ViewDataType)) {
     if (property.IsPrimaryKey) {
@@ -92,10 +94,17 @@ foreach (ModelProperty property in GetModelProperties(mvcHost.ViewDataType)) {
     } else if (!property.IsReadOnly) {
 #>
 			<div class="control-group">
-				@Html.LabelFor(model => model.<#= property.Name #>)
+				@Html.BootstrapLabelFor(model => model.<#= property.Name #>)
 				<div class="controls">
 					@Html.EditorFor(model => model.<#= property.Name #>)
-					@Html.ValidationMessageFor(model => model.<#= property.Name #>)
+					@Html.BootstrapValidationMessageFor(model => model.<#= property.Name #>)
+<#
+if (!string.IsNullOrEmpty(property.HelperText)) {
+#>
+					@Html.BootstrapFormHelpTextBlockFor(model => model.<#= property.Name #>)
+<#
+}
+#>
 				</div>
 			</div>
 
@@ -104,15 +113,12 @@ foreach (ModelProperty property in GetModelProperties(mvcHost.ViewDataType)) {
 }
 #>
 		<div class="form-actions">
-				<input type="submit" class="btn btn-primary" value="Submit" />
+			<input type="submit" class="btn btn-primary" value="Submit" />
+			@Html.ActionLink("Cancel", "Index", null, new {@class = "btn"})
 		</div>
 	</fieldset>
     
 }
-
-<div>
-	@Html.ActionLink("Back to List", "Index")
-</div>
 <#
 // The following code closes the asp:Content tag used in the case of a master page and the body and html tags in the case of a regular view page
 #>
@@ -134,6 +140,7 @@ class ModelProperty {
     public Type UnderlyingType { get; set; }
     public bool IsPrimaryKey { get; set; }
     public bool IsReadOnly { get; set; }
+	public string HelperText { get; set; }
 }
 
 // Change this list to include any non-primitive types you think should be eligible for display/edit
@@ -144,6 +151,7 @@ static Type[] bindableNonPrimitiveTypes = new[] {
     typeof(DateTime),
     typeof(DateTimeOffset),
     typeof(TimeSpan),
+	typeof(bool)
 };
 
 // Call this to get the list of properties in the model. Change this to modify or add your
@@ -158,6 +166,9 @@ List<ModelProperty> GetModelProperties(Type type) {
         else if (prop.UnderlyingType == typeof(DateTime)) {
             prop.ValueExpression = "String.Format(\"{0:g}\", " + prop.ValueExpression + ")";
         }
+		else if (prop.UnderlyingType == typeof(bool)) {
+			prop.HelperText = String.Empty; // Checkboxes are handled differently - see EditorTemplates\Boolean.cshtml
+		}
     }
 
     return results;
@@ -217,7 +228,8 @@ List<ModelProperty> GetEligibleProperties(Type type) {
                 ValueExpression = "Model." + prop.Name,
                 UnderlyingType = underlyingType,
                 IsPrimaryKey = IsPrimaryKey(prop),
-                IsReadOnly = prop.GetSetMethod() == null
+                IsReadOnly = prop.GetSetMethod() == null,
+				HelperText = GetHelperText(prop)
             });
         }
     }
@@ -228,5 +240,22 @@ List<ModelProperty> GetEligibleProperties(Type type) {
 // Helper
 bool IsBindableType(Type type) {
     return type.IsPrimitive || bindableNonPrimitiveTypes.Contains(type);
+}
+
+// Helper
+string GetHelperText(PropertyInfo property) {
+	string helperText = String.Empty;
+
+	foreach (object attribute in property.GetCustomAttributes(true)) {
+        if (attribute is HelperTextAttribute) {  // Bootstrap helper text
+			HelperTextAttribute helper = attribute as HelperTextAttribute;
+		    if (helper != null) {
+				helperText = helper.HelperText;
+			}
+        }
+                
+    }
+
+	return helperText;
 }
 #>
