@@ -23,3 +23,8 @@ deploy-to-ec2*
 
 #Monotouch garbage
 *.pidb 
+
+#VS11 garbage
+_UpgradeReport_Files/
+Backup*/
+UpgradeLog*.*
